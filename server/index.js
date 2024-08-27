@@ -17,19 +17,29 @@ const db = mysql.createConnection({
     database: "cities_data"
 })
 
+const convertToResponseObject = dbObject => {
+    return {
+        id: dbObject.id,
+        cityName: dbObject.city_name,
+        population: dbObject.population,
+        latitude: dbObject.latitude,
+        longitude: dbObject.longitude
+    }
+}
+
 app.get("/", (req, res) => {
-    res.json("Welcome to the Server Side!!")
+    res.json("Welcome to the CITIES API server side Application!!")
 })
 
-app.get("/cities", (req, res) => {
+app.get("/allCities", (req, res) => {
     const getBooksQuery = "SELECT * FROM cities_list";
     db.query(getBooksQuery, (err, data) => {
         if (data) {
 
             return res.json(data)
-        } else {
-            return res.json("Enter correct URL")
         }
+        return res.json("Enter correct URL")
+
 
     })
 })
@@ -91,6 +101,30 @@ app.get("/city/:id", (req, res) => {
         return res.json(data)
     })
 
+})
+
+app.get("/cities", (req, res) => {
+    const {
+        offset = 0,
+        limit = 10,
+        order = "ASC",
+        order_by = "city_name",
+        search_city = ""
+
+    } = req.query
+
+
+    const getBooksQuery = `
+        SELECT * FROM cities_list
+        ORDER BY ${order_by} ${order}
+        LIMIT ${limit} OFFSET ${offset}
+    `
+    db.query(getBooksQuery, (err, data) => {
+        if (err) {
+            return res.json(err)
+        }
+        return res.json(data)
+    })
 })
 
 app.listen(PORT, () => {
